@@ -1,7 +1,13 @@
 #!/bin/bash
 
-echo "Starting..."
+echo "Starting WordPress..."
 
-wp plugin install classic-editor --activate --allow-root
+docker-entrypoint.sh apache2-foreground &
 
-apache2-foreground
+sleep 20
+
+echo "Installing plugin..."
+
+wp plugin install classic-editor --activate --allow-root --path=/var/www/html || true
+
+wait
