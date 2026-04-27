@@ -14,7 +14,9 @@ services:
       - db_data:/var/lib/mysql
 
   wordpress:
-    image: wordpress:latest
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: wordpress-app
     restart: always
     depends_on:
