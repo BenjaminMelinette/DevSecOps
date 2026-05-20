@@ -42,18 +42,14 @@ jobs:
 
       - name: Complete WordPress installation via WP-CLI
         run: |
-          NETWORK=$(docker inspect wordpress-app --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
-          docker run --rm \
-            --volumes-from wordpress-app \
-            --network "$NETWORK" \
-            wordpress:cli \
-            wp core install \
+          docker exec wordpress-app wp core install \
             --url=http://localhost:8080 \
             --title="DevSecOps Lab" \
             --admin_user=admin \
             --admin_password=admin123 \
             --admin_email=admin@lab.com \
-            --allow-root
+            --allow-root \
+            --path=/var/www/html
 
       - name: Install WPScan
         run: |
@@ -124,18 +120,14 @@ jobs:
 
       - name: Complete WordPress installation via WP-CLI
         run: |
-          NETWORK=$(docker inspect wordpress-app --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
-          docker run --rm \
-            --volumes-from wordpress-app \
-            --network "$NETWORK" \
-            wordpress:cli \
-            wp core install \
+          docker exec wordpress-app wp core install \
             --url=http://localhost:8080 \
             --title="DevSecOps Lab" \
             --admin_user=admin \
             --admin_password=admin123 \
             --admin_email=admin@lab.com \
-            --allow-root
+            --allow-root \
+            --path=/var/www/html
 
       - name: Install WPScan
         run: |
