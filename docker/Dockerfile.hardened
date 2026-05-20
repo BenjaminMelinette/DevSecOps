@@ -1,0 +1,27 @@
+FROM wordpress:latest
+
+# Minimal packages only, clean apt cache to reduce image size
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Enable mod_headers (security headers) and mod_rewrite (block author enumeration)
+RUN a2enmod headers rewrite
+
+# Deploy Apache hardening config
+COPY docker/security.conf /etc/apache2/conf-available/wordpress-security.conf
+RUN a2enconf wordpress-security
+
+# Remove version-disclosing files and unused bundled plugins
+# (WordPress copies these from /usr/src/wordpress to /var/www/html on first boot)
+RUN rm -f /usr/src/wordpress/readme.html \
+          /usr/src/wordpress/license.txt \
+    && rm -rf /usr/src/wordpress/wp-content/plugins/akismet
+
+# Harden file permissions on WordPress source files
+RUN find /usr/src/wordpress -type d -exec chmod 755 {} \; \
+    && find /usr/src/wordpress -type f -exec chmod 644 {} \;
+
+LABEL org.opencontainers.image.title="WordPress Hardened" \
+      org.opencontainers.image.description="Security-hardened WordPress image" \
+      org.opencontainers.image.version="6.6"
