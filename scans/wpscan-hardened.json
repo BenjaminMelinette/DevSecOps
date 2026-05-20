@@ -1,0 +1,172 @@
+{
+  "banner": {
+    "description": "WordPress Security Scanner by the WPScan Team",
+    "version": "3.8.28",
+    "authors": [
+      "@_WPScan_",
+      "@ethicalhack3r",
+      "@erwan_lr",
+      "@firefart"
+    ],
+    "sponsor": ""
+  },
+  "db_update_started": true,
+  "db_files_updated": [
+    "metadata.json",
+    "wp_fingerprints.json",
+    "timthumbs-v3.txt",
+    "config_backups.txt",
+    "db_exports.txt",
+    "dynamic_finders.yml",
+    "LICENSE",
+    "sponsor.txt"
+  ],
+  "db_update_finished": true,
+  "start_time": 1779294244,
+  "start_memory": 69414912,
+  "target_url": "http://localhost:8080/",
+  "target_ip": "::1",
+  "effective_url": "http://localhost:8080/",
+  "interesting_findings": [
+    {
+      "url": "http://localhost:8080/",
+      "to_s": "Headers",
+      "type": "headers",
+      "found_by": "Headers (Passive Detection)",
+      "confidence": 100,
+      "confirmed_by": {
+
+      },
+      "references": {
+
+      },
+      "interesting_entries": [
+        "Server: Apache",
+        "Referrer-Policy: strict-origin-when-cross-origin",
+        "Permissions-Policy: geolocation=(), microphone=(), camera=()"
+      ]
+    }
+  ],
+  "version": {
+    "number": "6.9.4",
+    "release_date": "2026-03-11",
+    "status": "latest",
+    "found_by": "Rss Generator (Passive Detection)",
+    "confidence": 100,
+    "interesting_entries": [
+      "http://localhost:8080/?feed=rss2, <generator>https://wordpress.org/?v=6.9.4</generator>",
+      "http://localhost:8080/?feed=comments-rss2, <generator>https://wordpress.org/?v=6.9.4</generator>"
+    ],
+    "confirmed_by": {
+
+    },
+    "vulnerabilities": [
+
+    ]
+  },
+  "main_theme": {
+    "slug": "twentytwentyfive",
+    "location": "http://localhost:8080/wp-content/themes/twentytwentyfive/",
+    "latest_version": "1.4",
+    "last_updated": "2025-12-03T00:00:00.000Z",
+    "outdated": false,
+    "readme_url": "http://localhost:8080/wp-content/themes/twentytwentyfive/readme.txt",
+    "directory_listing": false,
+    "error_log_url": null,
+    "style_url": "http://localhost:8080/wp-content/themes/twentytwentyfive/style.css",
+    "style_name": "Twenty Twenty-Five",
+    "style_uri": "https://wordpress.org/themes/twentytwentyfive/",
+    "description": "Twenty Twenty-Five emphasizes simplicity and adaptability. It offers flexible design options, supported by a variety of patterns for different page types, such as services and landing pages, making it ideal for building personal blogs, professional portfolios, online magazines, or business websites. Its templates cater to various blog styles, from text-focused to image-heavy layouts. Additionally, it supports international typography and diverse color palettes, ensuring accessibility and customization for users worldwide.",
+    "author": "the WordPress team",
+    "author_uri": "https://wordpress.org",
+    "template": null,
+    "license": "GNU General Public License v2 or later",
+    "license_uri": "http://www.gnu.org/licenses/gpl-2.0.html",
+    "tags": "one-column, custom-colors, custom-menu, custom-logo, editor-style, featured-images, full-site-editing, block-patterns, rtl-language-support, sticky-post, threaded-comments, translation-ready, wide-blocks, block-styles, style-variations, accessibility-ready, blog, portfolio, news",
+    "text_domain": "twentytwentyfive",
+    "found_by": "Urls In Homepage (Passive Detection)",
+    "confidence": 4,
+    "interesting_entries": [
+
+    ],
+    "confirmed_by": {
+      "Urls In 404 Page (Passive Detection)": {
+        "confidence": 2,
+        "interesting_entries": [
+
+        ]
+      }
+    },
+    "vulnerabilities": [
+
+    ],
+    "version": {
+      "number": "1.4",
+      "confidence": 80,
+      "found_by": "Style (Passive Detection)",
+      "interesting_entries": [
+        "http://localhost:8080/wp-content/themes/twentytwentyfive/style.css, Match: 'Version: 1.4'"
+      ],
+      "confirmed_by": {
+
+      }
+    },
+    "parents": [
+
+    ]
+  },
+  "plugins": {
+
+  },
+  "themes": {
+
+  },
+  "timthumbs": {
+
+  },
+  "config_backups": {
+
+  },
+  "db_exports": {
+
+  },
+  "users": {
+    "admin": {
+      "id": null,
+      "found_by": "Rss Generator (Passive Detection)",
+      "confidence": 100,
+      "interesting_entries": [
+
+      ],
+      "confirmed_by": {
+        "Author Id Brute Forcing - Author Pattern (Aggressive Detection)": {
+          "confidence": 100,
+          "interesting_entries": [
+
+          ]
+        },
+        "Login Error Messages (Aggressive Detection)": {
+          "confidence": 100,
+          "interesting_entries": [
+
+          ]
+        }
+      }
+    }
+  },
+  "vuln_api": {
+    "plan": "free",
+    "requests_done_during_scan": 2,
+    "requests_remaining": 10
+  },
+  "stop_time": 1779294294,
+  "elapsed": 50,
+  "requests_done": 4167,
+  "cached_requests": 11,
+  "data_sent": 1183923,
+  "data_sent_humanised": "1.129 MB",
+  "data_received": 69771964,
+  "data_received_humanised": "66.54 MB",
+  "used_memory": 439427072,
+  "used_memory_humanised": "419.07 MB"
+}
