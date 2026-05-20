@@ -1,9 +1,5 @@
-FROM wordpress:latest
+FROM wordpress:6.0
 
-RUN apt-get update && apt-get install -y curl
-
-COPY src/entrypoint.sh /entrypoint.sh
-
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*

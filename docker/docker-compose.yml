@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:5.7
@@ -12,15 +10,22 @@ services:
       MYSQL_ROOT_PASSWORD: rootpass
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=rootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   wordpress:
-    build: 
+    build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: wordpress-app
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8080:80"
     environment:
