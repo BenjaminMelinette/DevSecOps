@@ -13,14 +13,14 @@ COPY docker/security.conf /etc/apache2/conf-available/wordpress-security.conf
 RUN a2enconf wordpress-security
 
 # Remove version-disclosing files and unused bundled plugins
-# (WordPress copies these from /usr/src/wordpress to /var/www/html on first boot)
 RUN rm -f /usr/src/wordpress/readme.html \
           /usr/src/wordpress/license.txt \
     && rm -rf /usr/src/wordpress/wp-content/plugins/akismet
 
-# Harden file permissions on WordPress source files
+# Harden file permissions, www-data owns all web files, no world-writable paths
 RUN find /usr/src/wordpress -type d -exec chmod 755 {} \; \
-    && find /usr/src/wordpress -type f -exec chmod 644 {} \;
+    && find /usr/src/wordpress -type f -exec chmod 644 {} \; \
+    && chown -R www-data:www-data /usr/src/wordpress /var/www/html
 
 LABEL org.opencontainers.image.title="WordPress Hardened" \
       org.opencontainers.image.description="Security-hardened WordPress image" \

@@ -1,4 +1,4 @@
-name: WordPress Vulnerability Scan
+name: WordPress Vulnerability Scan & Hardened Image Pipeline
 
 on:
   push:
@@ -6,9 +6,17 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  wpscan:
-    name: WPScan
+
+  # -------------------------------------------------------
+  # Job 1 — Scan the initial (default) image
+  # -------------------------------------------------------
+  scan-initial:
+    name: Scan Initial Image
     runs-on: ubuntu-latest
 
     steps:
@@ -39,12 +47,11 @@ jobs:
             ruby-full build-essential libcurl4-openssl-dev zlib1g-dev
           sudo gem install wpscan
 
-      - name: Run WPScan
+      - name: Run WPScan on initial image
         env:
           WPSCAN_API_TOKEN: ${{ secrets.WPSCAN_API_TOKEN }}
         run: |
           mkdir -p scans
-          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           TOKEN_ARG=""
           if [ -n "$WPSCAN_API_TOKEN" ]; then
             TOKEN_ARG="--api-token $WPSCAN_API_TOKEN"
@@ -54,17 +61,129 @@ jobs:
             --enumerate vp,vt,u,tt,cb,dbe \
             $TOKEN_ARG \
             --format json \
-            --output scans/wpscan-${TIMESTAMP}.json \
+            --output scans/wpscan-initial.json \
             --force || true
 
-      - name: Upload scan results
+      - name: Upload initial scan results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: wpscan-results-${{ github.run_number }}
-          path: scans/
+          name: wpscan-initial-${{ github.run_number }}
+          path: scans/wpscan-initial.json
           retention-days: 30
 
       - name: Tear down stack
         if: always()
-        run: docker compose -f docker/docker-compose.yml down
+        run: docker compose -f docker/docker-compose.yml down -v
+
+  # -------------------------------------------------------
+  # Job 2 — Build hardened image locally and rescan it
+  # -------------------------------------------------------
+  scan-hardened:
+    name: Rescan Hardened Image
+    runs-on: ubuntu-latest
+    needs: scan-initial
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start hardened WordPress stack
+        run: |
+          docker compose -f docker/docker-compose.yml \
+            -f docker/docker-compose.hardened.yml up -d --build
+
+      - name: Wait for WordPress to be ready
+        run: |
+          echo "Waiting for WordPress..."
+          for i in $(seq 1 24); do
+            if curl -sf --max-time 5 http://localhost:8080 > /dev/null 2>&1; then
+              echo "WordPress is ready after $i attempts"
+              exit 0
+            fi
+            echo "Attempt $i/24 — not ready yet, retrying in 5s..."
+            sleep 5
+          done
+          echo "WordPress did not become ready in time"
+          exit 1
+
+      - name: Install WPScan
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y --no-install-recommends \
+            ruby-full build-essential libcurl4-openssl-dev zlib1g-dev
+          sudo gem install wpscan
+
+      - name: Run WPScan on hardened image
+        env:
+          WPSCAN_API_TOKEN: ${{ secrets.WPSCAN_API_TOKEN }}
+        run: |
+          mkdir -p scans
+          TOKEN_ARG=""
+          if [ -n "$WPSCAN_API_TOKEN" ]; then
+            TOKEN_ARG="--api-token $WPSCAN_API_TOKEN"
+          fi
+          wpscan \
+            --url http://localhost:8080 \
+            --enumerate vp,vt,u,tt,cb,dbe \
+            $TOKEN_ARG \
+            --format json \
+            --output scans/wpscan-hardened.json \
+            --force || true
+
+      - name: Upload hardened scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wpscan-hardened-${{ github.run_number }}
+          path: scans/wpscan-hardened.json
+          retention-days: 30
+
+      - name: Tear down stack
+        if: always()
+        run: |
+          docker compose -f docker/docker-compose.yml \
+            -f docker/docker-compose.hardened.yml down -v
+
+  # -------------------------------------------------------
+  # Job 3 — Push to registries only after scan passes
+  # -------------------------------------------------------
+  push-hardened:
+    name: Push Hardened Image to Registries
+    runs-on: ubuntu-latest
+    needs: scan-hardened
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set lowercase owner (required by GHCR)
+        run: echo "OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push hardened image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.hardened
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/wordpress-hardened:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/wordpress-hardened:${{ github.sha }}
+            ghcr.io/${{ env.OWNER }}/wordpress-hardened:latest
+            ghcr.io/${{ env.OWNER }}/wordpress-hardened:${{ github.sha }}
