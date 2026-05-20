@@ -40,6 +40,21 @@ jobs:
           echo "WordPress did not become ready in time"
           exit 1
 
+      - name: Complete WordPress installation via WP-CLI
+        run: |
+          NETWORK=$(docker inspect wordpress-app --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+          docker run --rm \
+            --volumes-from wordpress-app \
+            --network "$NETWORK" \
+            wordpress:cli \
+            wp core install \
+            --url=http://localhost:8080 \
+            --title="DevSecOps Lab" \
+            --admin_user=admin \
+            --admin_password=admin123 \
+            --admin_email=admin@lab.com \
+            --allow-root
+
       - name: Install WPScan
         run: |
           sudo apt-get update -q
@@ -106,6 +121,21 @@ jobs:
           done
           echo "WordPress did not become ready in time"
           exit 1
+
+      - name: Complete WordPress installation via WP-CLI
+        run: |
+          NETWORK=$(docker inspect wordpress-app --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}')
+          docker run --rm \
+            --volumes-from wordpress-app \
+            --network "$NETWORK" \
+            wordpress:cli \
+            wp core install \
+            --url=http://localhost:8080 \
+            --title="DevSecOps Lab" \
+            --admin_user=admin \
+            --admin_password=admin123 \
+            --admin_email=admin@lab.com \
+            --allow-root
 
       - name: Install WPScan
         run: |
